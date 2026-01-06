@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pisos Laminados Eucafloor - Mapa Completo Gratuito</title>
+    <meta name="description" content="Localize seu bairro no mapa e fale direto no WhatsApp sobre pisos laminados Eucafloor. Atendimento em toda região metropolitana do Rio.">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+        
+        .header {
+            background: white;
+            padding: 25px 40px;
+            border-bottom: 3px solid #25D366;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .whatsapp-header {
+            background: #25D366;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .instruction-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .sidebar {
+            width: 400px;
+            background: #f8f9fa;
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .whatsapp-panel {
+            background: linear-gradient(135deg, #075E54, #25D366);
+            color: white;
+            padding: 25px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .whatsapp-panel.hidden {
+            display: none;
+        }
+        
+        .whatsapp-city {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .whatsapp-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .whatsapp-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+        
+        .whatsapp-button {
+            background: white;
+            color: #075E54;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .whatsapp-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        
+        .whatsapp-button i {
+            font-size: 24px;
+            color: #25D366;
+        }
+        
+        .bairros-list {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .bairros-list h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #25D366;
+        }
+        
+        .bairro-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 5px solid #25D366;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .bairro-item:hover {
+            background: #e8f4fc;
+            transform: translateX(5px);
+        }
+        
+        .bairro-item.active {
+            background: #25D366;
+            color: white;
+        }
+        
+        .bairro-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .bairro-city {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .bairro-item.active .bairro-city {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #128C7E;
+            transform: scale(1.1);
+        }
+        
+        .search-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 350px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #25D366;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: #075E54;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
+        }
+        
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            display: none;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .search-result-item:hover {
+            background: #dcf8c6;
+        }
+        
+        .products-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        
+        .products-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .product-item:hover {
+            background: #dcf8c6;
+            transform: translateX(5px);
+        }
+        
+        .product-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .prime-icon { background: #e74c3c; }
+        .elegance-icon { background: #3498db; }
+        .evidence-icon { background: #2ecc71; }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .product-desc {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .city-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            padding: 0 20px;
+        }
+        
+        .city-btn {
+            padding: 8px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .city-btn.active {
+            background: #25D366;
+            color: white;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 50vh;
+            }
+            
+            .map-container {
+                height: 50vh;
+            }
+            
+            .search-box {
+                width: calc(100% - 40px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .instructions {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .products-badge {
+                display: none;
+            }
+        }
+        
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            width: 300px !important;
+        }
+        
+        .custom-popup .leaflet-popup-tip {
+            background: #075E54;
+        }
+        
+        .popup-header {
+            background: linear-gradient(135deg, #075E54, #25D366);
+            color: white;
+            padding: 20px;
+        }
+        
+        .popup-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .popup-body {
+            padding: 20px;
+        }
+        
+        .popup-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .popup-whatsapp-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .popup-whatsapp-btn:hover {
+            background: #128C7E;
+        }
+        
+        .marker-cluster {
+            background: rgba(37, 211, 102, 0.6);
+            border-radius: 50%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .marker-cluster div {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-map-marker-alt"></i> Pisos Laminados Eucafloor</h1>
+            <p class="subtitle">Clique no seu bairro e fale direto no WhatsApp</p>
+            
+            <div class="whatsapp-header">
+                <i class="fab fa-whatsapp"></i>
+                WhatsApp Direto: +55 21 98795-3871
+            </div>
+            
+            <div class="instructions">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <span>Clique no seu bairro no mapa</span>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <span>Veja os produtos disponíveis</span>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <span>Fale direto no WhatsApp</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Busque seu bairro...">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+                
+                <div class="map-controls">
+                    <button class="control-btn" id="zoomIn" title="Ampliar Zoom">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="control-btn" id="zoomOut" title="Reduzir Zoom">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="control-btn" id="resetMap" title="Centralizar Mapa">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
+                </div>
+                
+                <div class="products-badge">
+                    <div class="products-title">
+                        <i class="fas fa-layer-group"></i> Linhas Eucafloor
+                    </div>
+                    <div class="products-grid">
+                        <div class="product-item" data-product="prime">
+                            <div class="product-icon prime-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">Eucafloor Prime</div>
+                                <div class="product-desc">Resistência Premium</div>
+                            </div>
+                        </div>
+                        <div class="product-item" data-product="elegance">
+                            <div class="product-icon elegance-icon">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">New Elegance</div>
+                                <div class="product-desc">Design Sofisticado</div>
+                            </div>
+                        </div>
+                        <div class="product-item" data-product="evidence">
+                            <div class="product-icon evidence-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name">New Evidence</div>
+                                <div class="product-desc">Proteção Total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="whatsapp-panel hidden" id="whatsappPanel">
+                    <div class="whatsapp-city" id="whatsappCity"></div>
+                    <div class="whatsapp-title" id="whatsappTitle"></div>
+                    <div class="whatsapp-description" id="whatsappDescription"></div>
+                    
+                    <button class="whatsapp-button" id="whatsappButton">
+                        <i class="fab fa-whatsapp"></i> FALAR NO WHATSAPP
+                    </button>
+                </div>
+                
+                <div class="city-filter">
+                    <button class="city-btn active" data-city="all">Todos</button>
+                    <button class="city-btn" data-city="Rio de Janeiro">Rio</button>
+                    <button class="city-btn" data-city="Niterói">Niterói</button>
+                    <button class="city-btn" data-city="São Gonçalo">São Gonçalo</button>
+                    <button class="city-btn" data-city="Maricá">Maricá</button>
+                </div>
+                
+                <div class="bairros-list">
+                    <h3><i class="fas fa-list"></i> Bairros</h3>
+                    <div id="bairrosList">
+                        <!-- Lista de bairros será carregada aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SEU NÚMERO DE WHATSAPP
+        const WHATSAPP_NUMBER = "+5521987953871";
+        
+        // Dados completos dos bairros com produtos específicos
+        const neighborhoods = [
+            // RIO DE JANEIRO - ZONA SUL
+            {
+                id: 1,
+                name: "Copacabana",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9700,
+                lng: -43.1826,
+                title: "Piso Laminado Eucafloor Prime em Copacabana",
+                description: "Instalação profissional do piso laminado mais resistente do mercado. Eucafloor Prime oferece durabilidade extrema para áreas de alto tráfego em apartamentos e escritórios em Copacabana.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Garantia 25 anos", "Instalação em 24h", "Resistente a água"],
+                keywords: "piso laminado Copacabana, Eucafloor Prime, piso resistente"
+            },
+            {
+                id: 2,
+                name: "Ipanema",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9840,
+                lng: -43.2058,
+                title: "Piso Laminado New Evidence em Ipanema",
+                description: "New Evidence com tecnologia de proteção contra umidade, ideal para apartamentos à beira-mar em Ipanema. Não mancha, não incha e mantém a beleza por anos.",
+                products: ["evidence", "elegance"],
+                features: ["Proteção contra umidade", "Antimancha", "Instalação profissional"],
+                keywords: "piso Ipanema, New Evidence, piso à prova d'água"
+            },
+            {
+                id: 3,
+                name: "Leblon",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9829,
+                lng: -43.2163,
+                title: "Piso Laminado New Elegance no Leblon",
+                description: "New Elegance traz sofisticação para o Leblon com textura realista de madeira nobre. Perfeito para quem busca elegância e durabilidade em apartamentos de alto padrão.",
+                products: ["elegance", "prime"],
+                features: ["Textura madeira nobre", "Fácil limpeza", "Design premium"],
+                keywords: "piso Leblon, New Elegance, piso sofisticado"
+            },
+            {
+                id: 4,
+                name: "Botafogo",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9514,
+                lng: -43.1865,
+                title: "Piso Laminado New Elegance em Botafogo",
+                description: "Instalação de pisos laminados New Elegance e Eucafloor Prime em Botafogo. Elegância e durabilidade para seu imóvel.",
+                products: ["elegance", "prime"],
+                features: ["Elegância e durabilidade", "Instalação rápida", "Acabamento premium"],
+                keywords: "piso laminado Botafogo, New Elegance, Eucafloor RJ"
+            },
+            {
+                id: 5,
+                name: "Flamengo",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9345,
+                lng: -43.1752,
+                title: "New Evidence no Flamengo - Resistência e Beleza",
+                description: "Pisos laminados New Evidence e Eucafloor Prime no Flamengo. Proteção contra umidade e alta durabilidade.",
+                products: ["evidence", "prime"],
+                features: ["Proteção contra umidade", "Alta durabilidade", "Resistente a impacto"],
+                keywords: "piso laminado Flamengo, New Evidence, Eucafloor Prime"
+            },
+            {
+                id: 6,
+                name: "Laranjeiras",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9375,
+                lng: -43.1912,
+                title: "Eucafloor Prime em Laranjeiras - Qualidade Premium",
+                description: "Pisos laminados Eucafloor Prime, New Elegance e New Evidence em Laranjeiras. Soluções para residências e comércios.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Qualidade premium", "Para residência e comércio", "Instalação especializada"],
+                keywords: "piso laminado Laranjeiras, Eucafloor Prime, New Elegance RJ"
+            },
+            {
+                id: 7,
+                name: "Jardim Botânico",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9662,
+                lng: -43.2258,
+                title: "Piso Laminado New Elegance no Jardim Botânico",
+                description: "Instalação de pisos laminados New Elegance e Eucafloor Prime no Jardim Botânico. Elegância natural para ambientes sofisticados.",
+                products: ["elegance", "prime"],
+                features: ["Elegância natural", "Ambientes sofisticados", "Textura realista"],
+                keywords: "piso laminado Jardim Botânico, New Elegance, Eucafloor Prime"
+            },
+            {
+                id: 8,
+                name: "Gávea",
+                city: "Rio de Janeiro",
+                zone: "Zona Sul",
+                lat: -22.9756,
+                lng: -43.2332,
+                title: "Piso Laminado Eucafloor Prime na Gávea",
+                description: "Pisos laminados premium Eucafloor Prime, New Elegance e New Evidence na Gávea. Qualidade e durabilidade para seu imóvel.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Premium quality", "Durabilidade extrema", "Instalação garantida"],
+                keywords: "piso laminado Gávea, Eucafloor Prime, New Evidence Rio"
+            },
+            
+            // RIO DE JANEIRO - ZONA NORTE
+            {
+                id: 9,
+                name: "Tijuca",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9292,
+                lng: -43.2334,
+                title: "Piso Laminado New Evidence na Tijuca",
+                description: "Instalação de pisos laminados New Evidence e Eucafloor Prime na Tijuca. Resistência a impactos e fácil manutenção.",
+                products: ["evidence", "prime"],
+                features: ["Resistência a impactos", "Fácil manutenção", "Instalação rápida"],
+                keywords: "piso laminado Tijuca, New Evidence, Eucafloor Prime Zona Norte"
+            },
+            {
+                id: 10,
+                name: "Vila Isabel",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9197,
+                lng: -43.2446,
+                title: "Eucafloor Prime em Vila Isabel - Durabilidade",
+                description: "Pisos laminados Eucafloor Prime, New Elegance e New Evidence em Vila Isabel. Soluções para toda a família.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Durabilidade", "Soluções familiares", "Preço competitivo"],
+                keywords: "piso laminado Vila Isabel, Eucafloor Prime, New Elegance RJ"
+            },
+            {
+                id: 11,
+                name: "Grajaú",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9278,
+                lng: -43.2586,
+                title: "Piso Laminado New Elegance no Grajaú",
+                description: "Instalação de pisos laminados New Elegance e Eucafloor Prime no Grajaú. Conforto e beleza para sua residência.",
+                products: ["elegance", "prime"],
+                features: ["Conforto", "Beleza", "Ambiente acolhedor"],
+                keywords: "piso laminado Grajaú, New Elegance, Eucafloor Prime Zona Norte"
+            },
+            {
+                id: 12,
+                name: "Maracanã",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9125,
+                lng: -43.2303,
+                title: "Piso Laminado Eucafloor Prime no Maracanã",
+                description: "Pisos laminados premium Eucafloor Prime, New Elegance e New Evidence no Maracanã. Ideal para áreas de grande circulação.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Áreas de grande circulação", "Resistência premium", "Instalação profissional"],
+                keywords: "piso laminado Maracanã, Eucafloor Prime, New Evidence Rio"
+            },
+            {
+                id: 13,
+                name: "São Cristóvão",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9023,
+                lng: -43.2264,
+                title: "New Evidence em São Cristóvão - Alta Resistência",
+                description: "Pisos laminados New Evidence e Eucafloor Prime em São Cristóvão. Proteção contra manchas e umidade.",
+                products: ["evidence", "prime"],
+                features: ["Proteção contra manchas", "Resistência à umidade", "Fácil limpeza"],
+                keywords: "piso laminado São Cristóvão, New Evidence, Eucafloor Prime"
+            },
+            {
+                id: 14,
+                name: "Rio Comprido",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9295,
+                lng: -43.2059,
+                title: "Piso Laminado New Elegance no Rio Comprido",
+                description: "Instalação de pisos laminados New Elegance e Eucafloor Prime no Rio Comprido. Design sofisticado e durabilidade.",
+                products: ["elegance", "prime"],
+                features: ["Design sofisticado", "Durabilidade", "Acabamento perfeito"],
+                keywords: "piso laminado Rio Comprido, New Elegance, Eucafloor Prime"
+            },
+            {
+                id: 15,
+                name: "Méier",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.9025,
+                lng: -43.2814,
+                title: "Eucafloor Prime no Méier - Qualidade Comprovada",
+                description: "Pisos laminados Eucafloor Prime, New Elegance e New Evidence no Méier. Soluções residenciais e comerciais.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Qualidade comprovada", "Residencial e comercial", "Garantia total"],
+                keywords: "piso laminado Méier, Eucafloor Prime, New Evidence Zona Norte"
+            },
+            {
+                id: 16,
+                name: "Ramos",
+                city: "Rio de Janeiro",
+                zone: "Zona Norte",
+                lat: -22.8484,
+                lng: -43.2592,
+                title: "Piso Laminado New Evidence em Ramos",
+                description: "Instalação de pisos laminados New Evidence e Eucafloor Prime em Ramos. Resistência para áreas de alto tráfego.",
+                products: ["evidence", "prime"],
+                features: ["Áreas de alto tráfego", "Resistência extrema", "Longa duração"],
+                keywords: "piso laminado Ramos, New Evidence, Eucafloor Prime"
+            },
+            
+            // RIO DE JANEIRO - ZONA OESTE
+            {
+                id: 17,
+                name: "Barra da Tijuca",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -23.0010,
+                lng: -43.3656,
+                title: "Piso Laminado Eucafloor Prime na Barra",
+                description: "Pisos laminados premium Eucafloor Prime, New Elegance e New Evidence na Barra da Tijuca. Modernidade e qualidade.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Modernidade", "Qualidade premium", "Design contemporâneo"],
+                keywords: "piso laminado Barra da Tijuca, Eucafloor Prime, New Elegance Zona Oeste"
+            },
+            {
+                id: 18,
+                name: "Recreio dos Bandeirantes",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -23.0312,
+                lng: -43.4830,
+                title: "New Evidence no Recreio - Resistência à Umidade",
+                description: "Pisos laminados New Evidence e Eucafloor Prime no Recreio dos Bandeirantes. Ideal para áreas próximas à praia.",
+                products: ["evidence", "prime"],
+                features: ["Resistência à umidade", "Ideal para praia", "Proteção solar"],
+                keywords: "piso laminado Recreio, New Evidence, Eucafloor Prime RJ"
+            },
+            {
+                id: 19,
+                name: "Jacarepaguá",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -22.9468,
+                lng: -43.3528,
+                title: "Piso Laminado New Elegance em Jacarepaguá",
+                description: "Instalação de pisos laminados New Elegance e Eucafloor Prime em Jacarepaguá. Conforto e beleza para seu lar.",
+                products: ["elegance", "prime"],
+                features: ["Conforto", "Beleza", "Ambiente familiar"],
+                keywords: "piso laminado Jacarepaguá, New Elegance, Eucafloor Prime Zona Oeste"
+            },
+            {
+                id: 20,
+                name: "Campo Grande",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -22.8978,
+                lng: -43.5638,
+                title: "Eucafloor Prime em Campo Grande - Durabilidade",
+                description: "Pisos laminados Eucafloor Prime, New Elegance e New Evidence em Campo Grande. Soluções para toda a família.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Durabilidade", "Soluções familiares", "Custo-benefício"],
+                keywords: "piso laminado Campo Grande, Eucafloor Prime, New Evidence RJ"
+            },
+            {
+                id: 21,
+                name: "Santa Cruz",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -22.9200,
+                lng: -43.6856,
+                title: "Piso Laminado New Evidence em Santa Cruz",
+                description: "Instalação de pisos laminados New Evidence e Eucafloor Prime em Santa Cruz. Alta resistência e fácil manutenção.",
+                products: ["evidence", "prime"],
+                features: ["Alta resistência", "Fácil manutenção", "Instalação rápida"],
+                keywords: "piso laminado Santa Cruz, New Evidence, Eucafloor Prime"
+            },
+            {
+                id: 22,
+                name: "Guaratiba",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -23.0007,
+                lng: -43.6131,
+                title: "Piso Laminado Eucafloor Prime em Guaratiba",
+                description: "Pisos laminados premium Eucafloor Prime, New Elegance e New Evidence em Guaratiba. Qualidade para seu imóvel.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Qualidade premium", "Durabilidade", "Instalação garantida"],
+                keywords: "piso laminado Guaratiba, Eucafloor Prime, New Elegance Zona Oeste"
+            },
+            {
+                id: 23,
+                name: "Bangu",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -22.8833,
+                lng: -43.4667,
+                title: "New Elegance em Bangu - Design e Conforto",
+                description: "Pisos laminados New Elegance e Eucafloor Prime em Bangu. Elegância e durabilidade para ambientes residenciais.",
+                products: ["elegance", "prime"],
+                features: ["Design", "Conforto", "Ambientes residenciais"],
+                keywords: "piso laminado Bangu, New Elegance, Eucafloor Prime"
+            },
+            {
+                id: 24,
+                name: "Realengo",
+                city: "Rio de Janeiro",
+                zone: "Zona Oeste",
+                lat: -22.8724,
+                lng: -43.4315,
+                title: "Piso Laminado New Evidence em Realengo",
+                description: "Instalação de pisos laminados New Evidence e Eucafloor Prime em Realengo. Proteção contra manchas e umidade.",
+                products: ["evidence", "prime"],
+                features: ["Proteção contra manchas", "Resistência à umidade", "Fácil limpeza"],
+                keywords: "piso laminado Realengo, New Evidence, Eucafloor Prime Zona Oeste"
+            },
+            
+            // NITERÓI
+            {
+                id: 25,
+                name: "Icaraí",
+                city: "Niterói",
+                zone: "Zona Sul",
+                lat: -22.9024,
+                lng: -43.1049,
+                title: "Piso Laminado Eucafloor Prime em Icaraí - Niterói",
+                description: "Instalação de pisos laminados Eucafloor Prime, New Elegance e New Evidence em Icaraí - Niterói. Atendimento em toda região.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Atendimento regional", "Qualidade garantida", "Instalação profissional"],
+                keywords: "piso laminado Icaraí Niterói, Eucafloor Prime, New Evidence, piso Niterói"
+            },
+            {
+                id: 26,
+                name: "São Francisco",
+                city: "Niterói",
+                zone: "Zona Norte",
+                lat: -22.8866,
+                lng: -43.1182,
+                title: "Piso Laminado New Evidence em São Francisco - Niterói",
+                description: "Pisos laminados New Evidence e Eucafloor Prime em São Francisco - Niterói. Proteção contra umidade para áreas molhadas.",
+                products: ["evidence", "prime"],
+                features: ["Proteção contra umidade", "Áreas molhadas", "Resistência"],
+                keywords: "piso São Francisco Niterói, New Evidence, Eucafloor Prime, piso resistente umidade"
+            },
+            {
+                id: 27,
+                name: "Santa Rosa",
+                city: "Niterói",
+                zone: "Zona Norte",
+                lat: -22.8916,
+                lng: -43.1198,
+                title: "Piso Laminado New Elegance em Santa Rosa - Niterói",
+                description: "Pisos laminados New Elegance e Eucafloor Prime em Santa Rosa - Niterói. Elegância e qualidade para seu lar.",
+                products: ["elegance", "prime"],
+                features: ["Elegância", "Qualidade", "Ambiente acolhedor"],
+                keywords: "piso Santa Rosa Niterói, New Elegance, Eucafloor Prime, instalação Niterói"
+            },
+            {
+                id: 28,
+                name: "Ingá",
+                city: "Niterói",
+                zone: "Zona Sul",
+                lat: -22.9092,
+                lng: -43.1128,
+                title: "Piso Laminado Eucafloor Prime no Ingá - Niterói",
+                description: "Instalação premium de pisos laminados Eucafloor Prime, New Elegance e New Evidence no Ingá - Niterói.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Premium", "Qualidade superior", "Instalação especializada"],
+                keywords: "piso Ingá Niterói, Eucafloor Prime, New Evidence, piso premium Niterói"
+            },
+            
+            // SÃO GONÇALO
+            {
+                id: 29,
+                name: "Alcântara",
+                city: "São Gonçalo",
+                zone: "Centro",
+                lat: -22.8118,
+                lng: -43.0965,
+                title: "Piso Laminado Eucafloor Prime em Alcântara - São Gonçalo",
+                description: "Pisos laminados Eucafloor Prime, New Elegance e New Evidence em Alcântara - São Gonçalo. Atendimento rápido e garantido.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Atendimento rápido", "Garantia total", "Instalação profissional"],
+                keywords: "piso Alcântara São Gonçalo, Eucafloor Prime, New Evidence, piso São Gonçalo"
+            },
+            {
+                id: 30,
+                name: "Neves",
+                city: "São Gonçalo",
+                zone: "Zona Norte",
+                lat: -22.8184,
+                lng: -43.0679,
+                title: "Piso Laminado New Elegance em Neves - São Gonçalo",
+                description: "Instalação de pisos laminados New Elegance e Eucafloor Prime em Neves - São Gonçalo. Qualidade e preço justo.",
+                products: ["elegance", "prime"],
+                features: ["Qualidade", "Preço justo", "Instalação rápida"],
+                keywords: "piso Neves São Gonçalo, New Elegance, Eucafloor Prime, instalação São Gonçalo"
+            },
+            {
+                id: 31,
+                name: "Trindade",
+                city: "São Gonçalo",
+                zone: "Zona Sul",
+                lat: -22.8307,
+                lng: -43.0538,
+                title: "Piso Laminado New Evidence em Trindade - São Gonçalo",
+                description: "Pisos laminados New Evidence e Eucafloor Prime em Trindade - São Gonçalo. Resistência e beleza para seu imóvel.",
+                products: ["evidence", "prime"],
+                features: ["Resistência", "Beleza", "Durabilidade"],
+                keywords: "piso Trindade São Gonçalo, New Evidence, Eucafloor Prime, piso resistente"
+            },
+            {
+                id: 32,
+                name: "Jardim Catarina",
+                city: "São Gonçalo",
+                zone: "Zona Oeste",
+                lat: -22.8423,
+                lng: -43.0886,
+                title: "Piso Laminado Eucafloor Prime no Jardim Catarina - São Gonçalo",
+                description: "Pisos laminados Eucafloor Prime, New Elegance e New Evidence no Jardim Catarina - São Gonçalo. Soluções para toda família.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Soluções familiares", "Qualidade", "Preço acessível"],
+                keywords: "piso Jardim Catarina São Gonçalo, Eucafloor Prime, New Elegance, piso família"
+            },
+            
+            // MARICÁ
+            {
+                id: 33,
+                name: "Centro",
+                city: "Maricá",
+                zone: "Centro",
+                lat: -22.9194,
+                lng: -42.8186,
+                title: "Piso Laminado Eucafloor Prime no Centro de Maricá",
+                description: "Instalação de pisos laminados Eucafloor Prime, New Elegance e New Evidence no Centro de Maricá. Atendemos toda região.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Atendimento regional", "Instalação profissional", "Garantia"],
+                keywords: "piso Centro Maricá, Eucafloor Prime, New Evidence, piso Maricá"
+            },
+            {
+                id: 34,
+                name: "Itaipuaçu",
+                city: "Maricá",
+                zone: "Litoral",
+                lat: -22.9633,
+                lng: -42.8589,
+                title: "Piso Laminado New Evidence em Itaipuaçu - Maricá",
+                description: "Pisos laminados New Evidence e Eucafloor Prime em Itaipuaçu - Maricá. Ideal para áreas litorâneas com proteção à umidade.",
+                products: ["evidence", "prime"],
+                features: ["Proteção à umidade", "Áreas litorâneas", "Resistência ao sal"],
+                keywords: "piso Itaipuaçu Maricá, New Evidence, Eucafloor Prime, piso para litoral"
+            },
+            {
+                id: 35,
+                name: "Inoã",
+                city: "Maricá",
+                zone: "Interior",
+                lat: -22.8961,
+                lng: -42.8556,
+                title: "Piso Laminado New Elegance em Inoã - Maricá",
+                description: "Pisos laminados New Elegance e Eucafloor Prime em Inoã - Maricá. Elegância e conforto para sua casa.",
+                products: ["elegance", "prime"],
+                features: ["Elegância", "Conforto", "Ambiente acolhedor"],
+                keywords: "piso Inoã Maricá, New Elegance, Eucafloor Prime, piso elegante Maricá"
+            },
+            {
+                id: 36,
+                name: "Barra de Maricá",
+                city: "Maricá",
+                zone: "Litoral",
+                lat: -22.9683,
+                lng: -42.8325,
+                title: "Piso Laminado Eucafloor Prime na Barra de Maricá",
+                description: "Pisos laminados premium Eucafloor Prime, New Elegance e New Evidence na Barra de Maricá. Qualidade para imóveis à beira-mar.",
+                products: ["prime", "elegance", "evidence"],
+                features: ["Premium", "Beira-mar", "Resistência ao clima"],
+                keywords: "piso Barra de Maricá, Eucafloor Prime, New Evidence, piso beira-mar"
+            }
+        ];
+
+        // Variáveis globais
+        let map;
+        let markers = [];
+        let currentFilter = 'all';
+        let currentNeighborhood = null;
+        let searchTimeout = null;
+        let markerCluster;
+
+        // Inicializar o mapa
+        function initMap() {
+            // Centro inicial - Região Metropolitana do Rio
+            map = L.map('map').setView([-22.9068, -43.1729], 11);
+            
+            // Adicionar tile layer do OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Inicializar cluster de marcadores
+            markerCluster = L.markerClusterGroup({
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                maxClusterRadius: 50
+            });
+            
+            map.addLayer(markerCluster);
+            
+            // Adicionar marcadores
+            addMarkers(neighborhoods);
+            
+            // Renderizar lista inicial
+            renderBairrosList(neighborhoods);
+            
+            // Ajustar mapa ao redimensionar
+            window.addEventListener('resize', function() {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 200);
+            });
+        }
+
+        // Adicionar marcadores ao mapa
+        function addMarkers(data) {
+            // Limpar marcadores anteriores
+            markerCluster.clearLayers();
+            markers = [];
+            
+            // Cores por cidade
+            const cityColors = {
+                'Rio de Janeiro': '#e74c3c',
+                'Niterói': '#3498db',
+                'São Gonçalo': '#2ecc71',
+                'Maricá': '#f39c12'
+            };
+            
+            // Adicionar cada marcador
+            data.forEach(item => {
+                // Criar ícone personalizado
+                const icon = L.divIcon({
+                    html: `<div style="background-color: ${cityColors[item.city]}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">${item.name.charAt(0)}</div>`,
+                    className: 'custom-marker',
+                    iconSize: [31, 31]
+                });
+                
+                // Criar marcador
+                const marker = L.marker([item.lat, item.lng], { icon });
+                
+                // Conteúdo do popup
+                const popupContent = `
+                    <div class="popup-header">
+                        <div class="popup-title">${item.name} - ${item.city}</div>
+                    </div>
+                    <div class="popup-body">
+                        <div class="popup-description">${item.description}</div>
+                        <button class="popup-whatsapp-btn" onclick="openWhatsApp(${item.id})">
+                            <i class="fab fa-whatsapp"></i> FALAR NO WHATSAPP
+                        </button>
+                    </div>
+                `;
+                
+                // Adicionar popup
+                marker.bindPopup(popupContent, {
+                    className: 'custom-popup',
+                    maxWidth: 300
+                });
+                
+                // Armazenar dados no marcador
+                marker.neighborhoodData = item;
+                
+                // Adicionar evento de clique
+                marker.on('click', function() {
+                    selectNeighborhood(item);
+                });
+                
+                // Adicionar ao cluster
+                markerCluster.addLayer(marker);
+                markers.push(marker);
+            });
+        }
+
+        // Selecionar um bairro
+        function selectNeighborhood(neighborhood) {
+            currentNeighborhood = neighborhood;
+            
+            // Atualizar painel do WhatsApp
+            updateWhatsAppPanel(neighborhood);
+            
+            // Atualizar item ativo na lista
+            updateActiveBairro(neighborhood.id);
+            
+            // Centralizar no marcador
+            map.setView([neighborhood.lat, neighborhood.lng], 14);
+            
+            // Abrir popup do marcador
+            markers.forEach(marker => {
+                if (marker.neighborhoodData.id === neighborhood.id) {
+                    marker.openPopup();
+                }
+            });
+        }
+
+        // Atualizar painel do WhatsApp
+        function updateWhatsAppPanel(neighborhood) {
+            const panel = document.getElementById('whatsappPanel');
+            const city = document.getElementById('whatsappCity');
+            const title = document.getElementById('whatsappTitle');
+            const description = document.getElementById('whatsappDescription');
+            const button = document.getElementById('whatsappButton');
+            
+            // Preencher dados
+            city.textContent = `${neighborhood.name} - ${neighborhood.city}`;
+            title.textContent = neighborhood.title;
+            description.textContent = neighborhood.description;
+            
+            // Configurar botão do WhatsApp
+            button.onclick = () => openWhatsApp(neighborhood.id);
+            
+            // Mostrar painel
+            panel.classList.remove('hidden');
+        }
+
+        // Abrir WhatsApp
+        function openWhatsApp(neighborhoodId) {
+            const neighborhood = neighborhoods.find(n => n.id === neighborhoodId);
+            if (!neighborhood) return;
+            
+            // Montar mensagem para WhatsApp
+            const message = `Olá! Gostaria de informações sobre:\n\n*${neighborhood.title}*\n\nBairro: ${neighborhood.name}\nCidade: ${neighborhood.city}\n\nProdutos disponíveis: ${neighborhood.products.map(p => {
+                if (p === 'prime') return 'Eucafloor Prime';
+                if (p === 'elegance') return 'New Elegance';
+                if (p === 'evidence') return 'New Evidence';
+                return p;
+            }).join(', ')}\n\nPoderia me passar mais detalhes?`;
+            
+            // Codificar a mensagem para URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // URL do WhatsApp
+            const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+            
+            // Abrir em nova aba
+            window.open(whatsappURL, '_blank');
+        }
+
+        // Atualizar bairro ativo na lista
+        function updateActiveBairro(neighborhoodId) {
+            document.querySelectorAll('.bairro-item').forEach(item => {
+                if (parseInt(item.dataset.id) === neighborhoodId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Renderizar lista de bairros
+        function renderBairrosList(data) {
+            const list = document.getElementById('bairrosList');
+            list.innerHTML = '';
+            
+            if (data.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhum bairro encontrado</div>';
+                return;
+            }
+            
+            // Ordenar por cidade e nome
+            data.sort((a, b) => {
+                if (a.city === b.city) {
+                    return a.name.localeCompare(b.name);
+                }
+                return a.city.localeCompare(b.city);
+            });
+            
+            let currentCity = '';
+            data.forEach(item => {
+                // Adicionar separador de cidade
+                if (item.city !== currentCity) {
+                    currentCity = item.city;
+                    const cityHeader = document.createElement('div');
+                    cityHeader.className = 'city-header';
+                    cityHeader.innerHTML = `<strong style="color: #2c3e50; display: block; margin: 15px 0 10px 0; padding-bottom: 5px; border-bottom: 1px solid #ddd;">${item.city}</strong>`;
+                    list.appendChild(cityHeader);
+                }
+                
+                const bairroItem = document.createElement('div');
+                bairroItem.className = 'bairro-item';
+                bairroItem.dataset.id = item.id;
+                bairroItem.innerHTML = `
+                    <div class="bairro-name">${item.name}</div>
+                    <div class="bairro-city">${item.city} - ${item.zone}</div>
+                `;
+                
+                bairroItem.addEventListener('click', function() {
+                    selectNeighborhood(item);
+                });
+                
+                list.appendChild(bairroItem);
+            });
+        }
+
+        // Buscar bairros
+        function searchNeighborhoods(searchTerm) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!searchTerm.trim()) {
+                resultsDiv.classList.remove('active');
+                // Se busca vazia, mostrar todos conforme filtro atual
+                applyCityFilter(currentFilter);
+                return;
+            }
+            
+            const term = searchTerm.toLowerCase();
+            
+            // Filtrar bairros
+            const results = neighborhoods.filter(item => 
+                item.name.toLowerCase().includes(term) ||
+                item.city.toLowerCase().includes(term) ||
+                item.zone.toLowerCase().includes(term) ||
+                item.title.toLowerCase().includes(term) ||
+                item.description.toLowerCase().includes(term) ||
+                item.keywords.toLowerCase().includes(term)
+            );
+            
+            // Mostrar resultados da busca
+            if (results.length > 0) {
+                resultsDiv.innerHTML = '';
+                results.forEach(item => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    resultItem.textContent = `${item.name} - ${item.city} (${item.zone})`;
+                    resultItem.addEventListener('click', () => {
+                        selectNeighborhood(item);
+                        resultsDiv.classList.remove('active');
+                        document.getElementById('searchInput').value = '';
+                    });
+                    resultsDiv.appendChild(resultItem);
+                });
+                resultsDiv.classList.add('active');
+            } else {
+                resultsDiv.innerHTML = '<div class="search-result-item">Nenhum bairro encontrado</div>';
+                resultsDiv.classList.add('active');
+            }
+        }
+
+        // Aplicar filtro por cidade
+        function applyCityFilter(city) {
+            currentFilter = city;
+            
+            let filteredData;
+            if (city === 'all') {
+                filteredData = neighborhoods;
+            } else {
+                filteredData = neighborhoods.filter(item => item.city === city);
+            }
+            
+            // Atualizar marcadores e lista
+            addMarkers(filteredData);
+            renderBairrosList(filteredData);
+            
+            // Atualizar botões ativos
+            document.querySelectorAll('.city-btn').forEach(btn => {
+                if (btn.dataset.city === city) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Limpar seleção atual
+            currentNeighborhood = null;
+            document.getElementById('whatsappPanel').classList.add('hidden');
+            
+            // Ajustar zoom se houver dados
+            if (filteredData.length > 0) {
+                if (filteredData.length === 1) {
+                    map.setView([filteredData[0].lat, filteredData[0].lng], 14);
+                } else {
+                    // Criar bounds para mostrar todos os marcadores
+                    const bounds = L.latLngBounds(filteredData.map(item => [item.lat, item.lng]));
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+        }
+
+        // Inicializar eventos
+        function initEvents() {
+            // Busca com debounce
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    searchNeighborhoods(e.target.value);
+                }, 300);
+            });
+            
+            // Limpar resultados ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-box')) {
+                    document.getElementById('searchResults').classList.remove('active');
+                }
+            });
+            
+            // Filtros por cidade
+            document.querySelectorAll('.city-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const city = this.dataset.city;
+                    applyCityFilter(city);
+                });
+            });
+            
+            // Controles do mapa
+            document.getElementById('zoomIn').addEventListener('click', function() {
+                map.zoomIn();
+            });
+            
+            document.getElementById('zoomOut').addEventListener('click', function() {
+                map.zoomOut();
+            });
+            
+            document.getElementById('resetMap').addEventListener('click', function() {
+                map.setView([-22.9068, -43.1729], 11);
+            });
+            
+            // Eventos para os produtos
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const product = this.dataset.product;
+                    // Filtrar bairros por produto
+                    const filteredByProduct = neighborhoods.filter(n => 
+                        n.products.includes(product)
+                    );
+                    addMarkers(filteredByProduct);
+                    renderBairrosList(filteredByProduct);
+                    
+                    // Atualizar filtro visual
+                    document.querySelectorAll('.city-btn').forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.city-btn[data-city="all"]').classList.add('active');
+                    currentFilter = 'all';
+                });
+            });
+        }
+
+        // Inicializar quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            initEvents();
+            
+            // Selecionar primeiro bairro por padrão
+            if (neighborhoods.length > 0) {
+                setTimeout(() => {
+                    selectNeighborhood(neighborhoods[0]);
+                }, 1000);
+            }
+            
+            console.log('Mapa carregado com sucesso! Total de bairros: ' + neighborhoods.length);
+        });
+    </script>
+</body>
+</html>
